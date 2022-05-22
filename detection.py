@@ -7,7 +7,8 @@ class Detector():
     '''Parent class for object detection'''
 
     def __init__(self):
-        '''Constructor for detection class'''
+        ''' Constructor for detection class
+        '''
         self.model = None
 
 
