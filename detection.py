@@ -100,3 +100,16 @@ class Detector():
         results = self.get_detection_results(image)
         bbox_locations = self.get_bbox_locations(results)
         return self.annotate(image, bbox_locations)
+
+
+class VehicleDetector(Detector):
+    def __init__(self, git_repo="yolov5", model_type="custom", model_wights_path=os.path.join("yolov5", "models", "yolov5s.pt")):
+        ''' Vehicle detector class. Inherits from Detector class.
+        Parameters:
+            git_repo: string; Reference to the git repository where the model is stored.
+            model_type: string; Type of model (custom of pre-built).
+            path: string; Path to the model weights.
+        '''
+
+        super().__init__()
+        self.set_detection_model()
