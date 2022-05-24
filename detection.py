@@ -12,7 +12,7 @@ class Detector():
         self.model = None
 
 
-    def set_detection_model(self, git_repo="yolov5", model_type="custom", model_wights_path=os.path.join("yolov5", "models", "yolov5s.pt")):
+    def set_detection_model(self, git_repo, model_type, model_wights_path):
         ''' Sets the model for detection.
         Parameters:
             git_repo: string; Reference to the git repository where the model is stored.
@@ -32,7 +32,7 @@ class Detector():
     def get_detection_model(self):
         ''' Fetches the detection model being used.
         Returns:
-            self.model: model object; The model attribute of the face detection class.
+            self.model: model object; The model attribute of the detection class.
         ''' 
 
         return self.model
@@ -49,7 +49,7 @@ class Detector():
         return self.model(image)
 
     
-    def get_bbox_locations(self, results, confidence_threshold=0.5):
+    def get_bbox_locations(self, results, confidence_threshold):
         ''' Returns the bounding box locations of the detected ojects.
         Parameters:
             results: pytorch tensor object; The results of inference on the given image.
@@ -90,7 +90,7 @@ class Detector():
         return image
 
     
-    def detect(self, image):
+    def detect(self, image, confidence_threshold=0.5):
         ''' Takes an image and returns the image detected objects annotated.
         Parameters:
             image: numpy array; The input to be annotated image.
@@ -99,7 +99,7 @@ class Detector():
         '''
 
         results = self.get_detection_results(image)
-        bbox_locations = self.get_bbox_locations(results)
+        bbox_locations = self.get_bbox_locations(results, confidence_threshold)
         return self.annotate(image, bbox_locations)
 
 
@@ -113,4 +113,4 @@ class VehicleDetector(Detector):
         '''
 
         super().__init__()
-        self.set_detection_model()
+        self.set_detection_model(git_repo, model_type, model_wights_path)

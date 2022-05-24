@@ -1,13 +1,14 @@
+from unittest import result
 import detection as d
 import tracker as t
 import cv2
 
-detector = d.Detector()
-detector.set_detection_model()
+detector = d.VehicleDetector()
+tracker = t.VehicleTracker()
 
 img = cv2.imread("test.jpg")
 
-img = detector.detect(img)
-
-# cv2.imwrite("test_result.jpg", img)
-
+for _ in range(0, 6):
+    results = detector.get_detection_results(img)
+    print(tracker.track(results, img))
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n")

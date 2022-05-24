@@ -1,10 +1,14 @@
 absl-py==1.0.0
+beautifulsoup4==4.11.1
 cachetools==5.1.0
 certifi==2022.5.18.1
 charset-normalizer==2.0.12
 colorama==0.4.4
 cycler==0.11.0
+easydict==1.9
+filelock==3.7.0
 fonttools==4.33.3
+gdown==4.4.0
 google-auth==2.6.6
 google-auth-oauthlib==0.4.6
 grpcio==1.46.3
@@ -13,6 +17,7 @@ importlib-metadata==4.11.4
 kiwisolver==1.4.2
 Markdown==3.3.7
 matplotlib==3.5.2
+mpmath==1.2.1
 numpy==1.21.6
 oauthlib==3.2.0
 opencv-python==4.5.5.64
@@ -23,6 +28,7 @@ protobuf==3.20.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pyparsing==3.0.9
+PySocks==1.7.1
 python-dateutil==2.8.2
 pytz==2022.1
 PyYAML==6.0
@@ -32,6 +38,8 @@ rsa==4.8
 scipy==1.7.3
 seaborn==0.11.2
 six==1.16.0
+soupsieve==2.3.2.post1
+sympy==1.10.1
 tensorboard==2.9.0
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.8.1
