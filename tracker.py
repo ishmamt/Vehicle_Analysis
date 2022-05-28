@@ -108,7 +108,7 @@ class VehicleTracker(Tracker):
         self.set_tracker_model(model_name, config_path)
 
     
-    def get_tracker_ids(self, results, image, confidence_threshold = 0.5):
+    def get_tracker_ids(self, results, image, confidence_threshold):
         ''' Fetches the tracker ids for vehicles using deepsort model.
         Parameters:
             results: pytorch tensor object; The results of inference on the given image.
