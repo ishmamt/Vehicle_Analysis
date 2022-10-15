@@ -47,18 +47,18 @@ class Detector():
         return self.model
 
 
-    def get_detection_results(self, image):
+    def get_detection_results(self, frame):
         '''
-        Returns detection results from the model given an image.
+        Returns detection results from the model given an frame.
 
             Parameters:
-                image (numpy array): Image to run inference on.
+                frame (numpy array): Frame to run inference on.
 
             Returns:
-                results (pytorch tensor object): The results of inference on the given image.
+                results (pytorch tensor object): The results of inference on the given frame.
         '''
 
-        return self.model(image)
+        return self.model(frame)
 
     
     def get_bbox_locations(self, results, confidence_threshold):
@@ -66,7 +66,7 @@ class Detector():
         Returns the bounding box locations of the detected ojects.
         
             Parameters:
-                results (pytorch tensor object): The results of inference on the given image.
+                results (pytorch tensor object): The results of inference on the given frame.
                 confidence_threshold (float): Threshold for minimum confidence of detection.
 
             Returns:
@@ -87,40 +87,40 @@ class Detector():
         return bbox_locations
 
     
-    def annotate(self, image, bbox_locations, color_primary=(72, 72, 255), box_width=2):
+    def annotate(self, frame, bbox_locations, color_primary=(72, 72, 255), box_width=2):
         '''
-        Returns the image with the bounding boxes annotated.
+        Returns the frame with the bounding boxes annotated.
         
             Parameters:
-                image (numpy array): The input to be annotated image.
+                frame (numpy array): The input to be annotated frame.
                 bbox_locations (list): The list of bounding box locations.
                 color_primary (tuple): Color of the bounding boxes.
                 box_width (int): Width of the bounding boxes.
 
             Returns:
-                image (numpy array): The annotated image.
+                frame (numpy array): The annotated frame.
         '''
         for (top, right, bottom, left) in bbox_locations: 
-            cv2.rectangle(image, (left, top), (right, bottom), color_primary, box_width)
+            cv2.rectangle(frame, (left, top), (right, bottom), color_primary, box_width)
         
-        return image
+        return frame
 
     
-    def detect(self, image, confidence_threshold=0.5):
+    def detect(self, frame, confidence_threshold=0.5):
         '''
-        Takes an image and returns the image detected objects annotated.
+        Takes an frame and returns the frame detected objects annotated.
         
             Parameters:
-                image (numpy array): The input to be annotated image.
+                frame (numpy array): The input frame.
                 confidence_threshold (float): Threshold for minimum confidence of detection.
 
             Returns:
-                image (numpy array): The annotated image.
+                frame (numpy array): The annotated frame.
         '''
-        results = self.get_detection_results(image)
+        results = self.get_detection_results(frame)
         bbox_locations = self.get_bbox_locations(results, confidence_threshold)
 
-        return self.annotate(image, bbox_locations)
+        return self.annotate(frame, bbox_locations)
 
 
 class VehicleDetector(Detector):

@@ -35,7 +35,8 @@ class Tracker():
         config.merge_from_file(config_path)
 
         self.model = DeepSort(model_name, max_dist=config.DEEPSORT.MAX_DIST, max_iou_distance=config.DEEPSORT.MAX_IOU_DISTANCE,
-                    max_age=config.DEEPSORT.MAX_AGE, n_init=config.DEEPSORT.N_INIT, nn_budget=config.DEEPSORT.NN_BUDGET, use_cuda=True)
+                    max_age=config.DEEPSORT.MAX_AGE, n_init=config.DEEPSORT.N_INIT, nn_budget=config.DEEPSORT.NN_BUDGET, 
+                    use_cuda=torch.cuda.is_available())
 
     
     def get_tracker_model(self):
@@ -49,13 +50,13 @@ class Tracker():
         return self.model
 
     
-    def get_tracker_ids(self, results, image, confidence_threshold):
+    def get_tracker_ids(self, results, frame, confidence_threshold):
         '''
         Fetches the tracker ids using deepsort model.
         
             Parameters:
-                results (pytorch tensor object): The results of inference on the given image.
-                image (numpy array): Image to run inference on.
+                results (pytorch tensor object): The results of inference on the given frame.
+                frame (numpy array): Frame to run inference on.
                 confidence_threshold (float): Threshold for minimum confidence of detection.
 
             Returns:
@@ -67,7 +68,7 @@ class Tracker():
         confidences = filtered_results[:, 4]
         classes =  filtered_results[:, 5]
         
-        return self.model.update(xywhs.cpu(), confidences.cpu(), classes.cpu(), image)
+        return self.model.update(xywhs.cpu(), confidences.cpu(), classes.cpu(), frame)
     
 
     def get_tracked_objects_info(self, tracked_objects):
@@ -83,31 +84,30 @@ class Tracker():
         tracked_objects_info = []
 
         for i in range(len(tracked_objects)):
-            xmin = tracked_objects[i][0] 
-            ymin = tracked_objects[i][1] + 10 
-            xmax = tracked_objects[i][2] 
-            ymax = tracked_objects[i][3] 
-            
+            x_min = tracked_objects[i][0] 
+            y_min = tracked_objects[i][1] + 10 
+            x_max = tracked_objects[i][2] 
+            y_max = tracked_objects[i][3] 
             id = int(tracked_objects[i][4])
             
-            tracked_objects_info.append((xmin, ymin, xmax, ymax, id))
+            tracked_objects_info.append((x_min, y_min, x_max, y_max, id))
         
         return tracked_objects_info
 
     
-    def track(self, results, image, confidence_threshold = 0.5):
+    def track(self, results, frame, confidence_threshold = 0.5):
         '''
         Returns a list containing bounding boxes and track ids of tracked objects.
         
             Parameters:
-                results (pytorch tensor object): The results of inference on the given image.
-                image (numpy array): Image to run inference on.
+                results (pytorch tensor object): The results of inference on the given frame.
+                frame (numpy array): Frame to run inference on.
                 confidence_threshold (float): Threshold for minimum confidence of detection.
             
             Returns:
                 tracked_objects_info (list): List of tuples containing info about tracked objects.
         '''
-        tracked_objects = self.get_tracker_ids(results, image, confidence_threshold)
+        tracked_objects = self.get_tracker_ids(results, frame, confidence_threshold)
 
         return self.get_tracked_objects_info(tracked_objects)
 
@@ -129,13 +129,13 @@ class VehicleTracker(Tracker):
         self.set_tracker_model(model_name, config_path)
 
     
-    def get_tracker_ids(self, results, image, confidence_threshold):
+    def get_tracker_ids(self, results, frame, confidence_threshold):
         '''
         Fetches the tracker ids for vehicles using deepsort model.
 
             Parameters:
-                results (pytorch tensor object): The results of inference on the given image.
-                image (numpy array): Image to run inference on.
+                results (pytorch tensor object): The results of inference on the given frame.
+                frame (numpy array): frame to run inference on.
                 confidence_threshold (float): Threshold for minimum confidence of detection.
                 
             Returns:
@@ -147,4 +147,4 @@ class VehicleTracker(Tracker):
         confidences = filtered_results[:, 4]
         classes =  filtered_results[:, 5]
         
-        return self.model.update(xywhs.cpu(), confidences.cpu(), classes.cpu(), image)
+        return self.model.update(xywhs.cpu(), confidences.cpu(), classes.cpu(), frame)
