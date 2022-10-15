@@ -7,15 +7,17 @@ class Speed():
     Class to handle everything related to speed calculation.
     '''
 
-    def __init__(self, entry_area, exit_area, deleting_line, distance_line, length):
+    def __init__(self, entry_area, exit_area, deleting_line, distance_line, length, logger):
         '''
         Constructor method for speed class.
         '''
         self.entry_area = Polygon(entry_area[0], entry_area[1], entry_area[2], entry_area[3])
         self.exit_area = Polygon(exit_area[0], exit_area[1], exit_area[2], exit_area[3])
-        self.deleting_line = Line(deleting_line[0], deleting_line[1])
+        # self.deleting_line = Line(deleting_line[0], deleting_line[1])
+        self.deleting_line = Polygon(deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3])
         self.distance_line = distance_line
         self.length = length * 0.001
+        self.logger = logger
         
         self.entered_the_polygon = {}  # {Object ID: entry_time}
         self.speed_dictionary = {}  # {Object ID: speed}
@@ -56,6 +58,7 @@ class Speed():
             x_min, y_min, x_max, y_max, id = object_info
             object_bbox = [(x_min, y_min), (x_min + (x_max - x_min), y_min), (x_max, y_max), (x_min, y_min + (y_max - y_min))]
             speed = None
+            # self.logger.debug(f"Object ID: {id} being tracked.")
 
             if self.entered_the_polygon.get(id, None) is None and not self.if_intersect(object_bbox, self.entry_area):
                 # The bbox with the same ID is not in the entered_the_polygon dictionary
@@ -67,6 +70,7 @@ class Speed():
                 # and it has just crossed entry area. We need to start processing this bbox.
                 entry_time = frame_count / fps  # in seconds
                 self.entered_the_polygon[id] = entry_time
+                self.logger.debug(f"Object with ID: {id} crossed the entry line. {self.entered_the_polygon} {self.speed_dictionary}")
 
             elif self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.exit_area):
                 # The bbox with the same ID is in the entered_the_polygon dictionary
@@ -81,12 +85,16 @@ class Speed():
                 else:
                     speed = self.speed_dictionary[id]
 
-            elif self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.exit_area):
+                self.logger.debug(f"Object with ID: {id} crossed the exit line. {self.entered_the_polygon} {self.speed_dictionary}")
+
+            if self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.deleting_line):
                 # The bbox with the same ID is in the entered_the_polygon dictionary
                 # and it has just crossed the deleting line. We need to delete this ID.
                 del self.entered_the_polygon[id]
                 if self.speed_dictionary.get(id, None):
                     del self.speed_dictionary[id]
+                
+                self.logger.debug(f"Object with ID: {id} crossed the delete line. {self.entered_the_polygon} {self.speed_dictionary}")
 
             if annotate:
                 frame = self.annotate(frame, [x_min, y_min, x_max, y_max], speed, id)
@@ -112,7 +120,7 @@ class Speed():
         cv2.rectangle(frame, (object_bbox[0], object_bbox[1]), (object_bbox[2], object_bbox[3]), color_primary, box_width)
 
         if speed:
-            text = str(id)+ ": " + str(speed) + " Km/h"
+            text = "ID: " + str(id)+ " Speed: " + str(speed) + " Km/h"
             text_width, text_height = cv2.getTextSize(text, font, font_size, font_thickness)[0]
             pos_x = max((object_bbox[0] - 20),0)
             pos_y = max((object_bbox[1] - 20),0)
