@@ -19,7 +19,7 @@ openvino==2022.2.0
 pafy==0.5.5
 pandas==1.3.5
 Pillow==9.2.0
-protobuf==4.21.7
+protobuf
 psutil==5.9.2
 pycocotools==2.0.5
 PyYAML==6.0
@@ -31,10 +31,10 @@ six==1.16.0
 sympy==1.10.1
 tensorflow==2.10.0
 tensorflowjs==4.0.0
-tensorrt==0.0.1.dev5
-tflite_runtime==2.10.0
+tensorrt==0.0.1
+tflite_runtime
 thop==0.0.31.post2005241907
-torch==1.11.0+cu113
-torchvision==0.12.0+cu113
+torch
+torchvision
 tqdm==4.64.0
 yacs==0.1.8
