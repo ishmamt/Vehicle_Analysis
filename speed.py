@@ -7,7 +7,7 @@ class Speed():
     Class to handle everything related to speed calculation.
     '''
 
-    def __init__(self, entry_area, exit_area, deleting_line, distance_line, length, logger):
+    def __init__(self, entry_area, exit_area, deleting_line, length, logger):
         '''
         Constructor method for speed class.
         '''
@@ -15,7 +15,6 @@ class Speed():
         self.exit_area = Polygon(exit_area[0], exit_area[1], exit_area[2], exit_area[3])
         # self.deleting_line = Line(deleting_line[0], deleting_line[1])
         self.deleting_line = Polygon(deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3])
-        self.distance_line = distance_line
         self.length = length * 0.001
         self.logger = logger
         
@@ -63,7 +62,7 @@ class Speed():
             if self.entered_the_polygon.get(id, None) is None and not self.if_intersect(object_bbox, self.entry_area):
                 # The bbox with the same ID is not in the entered_the_polygon dictionary
                 # and it has not crossed entry area. We do not need to calculate speed for this bbox.
-                continue
+                pass
 
             elif self.entered_the_polygon.get(id, None) is None and self.if_intersect(object_bbox, self.entry_area):
                 # The bbox with the same ID is not in the entered_the_polygon dictionary
@@ -81,11 +80,12 @@ class Speed():
                     speed = self.calculate_speed(self.entered_the_polygon[id], exit_time)
 
                     self.speed_dictionary[id] = speed
+                    self.logger.debug(f"Object with ID: {id} crossed the exit line: {exit_time}. entry_time: {self.entered_the_polygon} {self.speed_dictionary}")
 
                 else:
                     speed = self.speed_dictionary[id]
 
-                self.logger.debug(f"Object with ID: {id} crossed the exit line. {self.entered_the_polygon} {self.speed_dictionary}")
+                
 
             if self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.deleting_line):
                 # The bbox with the same ID is in the entered_the_polygon dictionary

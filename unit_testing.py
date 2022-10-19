@@ -8,25 +8,50 @@ import os
 import cv2
 import numpy as np
 
-roi = [(470, 165), (715, 180), (1230, 990), (200, 1030)]
-entry_area = [(450, 300), (675, 300), (700, 350), (420, 350)]
-exit_area = [(310, 530), (740, 530), (850, 740), (270, 740)]
-deleting_line = [(210, 780), (1145, 800), (1145, 880), (210, 880)]
-distacne_line = [(1077,384), (1125,394), (835, 966), (718,943)]
+roi = [(85,1030), (1326, 1068), (768, 320), (727, 178), (808, 51), (745, 50), (727, 93), (535, 140), (427, 246)]
+entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
+exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
+deleting_line = [(256, 770), (1057, 750), (1194, 918), (246, 964)]
 length = 25.0  # in meters
+
+
+
 
 detector = d.VehicleDetector()
 tracker = t.VehicleTracker()
-camera = c.Camera("Test", os.path.join("Data", "recording.avi"), roi)
-frame_skipper = u.FrameSkipper(4)
-logger = u.Logger(os.path.join("Data"), "recording")
-speed = s.Speed(entry_area, exit_area, deleting_line, distacne_line, length, logger)
+camera = c.Camera("Test", os.path.join("Data", "test_10s.avi"), roi)
+frame_skipper = u.FrameSkipper(1)
+logger = u.Logger(os.path.join("Data"), "test_10seconds")
+speed = s.Speed(entry_area, exit_area, deleting_line, length, logger)
+output_video = cv2.VideoWriter(os.path.join("Data", "output_10s.avi"), 
+                                cv2.VideoWriter_fourcc(*'MJPG'),
+                                camera.fps, camera.size)
+
+x_numpy = camera.size[0]
+y_numpy = camera.size[1]
+
+x_editor = 1920
+y_editor = 1080
+
+x_factor = x_numpy/x_editor
+y_factor = y_numpy/y_editor
+
+def process_coordinates(area):
+    area_processed = []
+    for co in area:
+        area_processed.append((int(co[0]*x_factor), int(co[1]*y_factor)))
+    return area_processed
+
+roi = process_coordinates(roi)
+entry_area = process_coordinates(entry_area)
+exit_area = process_coordinates(exit_area)
+deleting_line = process_coordinates(deleting_line)
 
 FRAME_COUNT = 0
 p_bar = tqdm(total = camera.total_frames)
 logger.info("Starting processing frames.")
 annotate = True
-playback_speed = 0.1
+playback_speed = 1
 
 while True:
     success, frame = camera.video.read()
@@ -37,7 +62,7 @@ while True:
         if frame_skipper.if_process_frame():
             masked_frame = camera.get_masked_frame(frame)
             results = detector.get_detection_results(masked_frame)
-            tracked_objects_info = tracker.track(results, masked_frame)
+            tracked_objects_info = tracker.track(results, masked_frame, confidence_threshold=0.5)
 
             masked_frame = speed.process_frame(masked_frame, tracked_objects_info, True, FRAME_COUNT, camera.fps)
 
@@ -51,7 +76,8 @@ while True:
         cv2.polylines(masked_frame,[np.array([exit_area[0], exit_area[1], exit_area[2], exit_area[3]], np.int32)], True, (15, 220, 18), 6)
         # cv2.line(masked_frame, deleting_line[0], deleting_line[1], (15, 220, 18), 6)
         cv2.polylines(masked_frame,[np.array([deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3]], np.int32)], True, (15, 220, 18), 6)
-        cv2.imshow("Video", masked_frame)
+        #cv2.imshow("Video", masked_frame)
+        output_video.write(masked_frame)
 
         k = cv2.waitKey(int(camera.fps * playback_speed))
         if k == ord('q'):

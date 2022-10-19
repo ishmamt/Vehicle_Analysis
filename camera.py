@@ -32,6 +32,7 @@ class Camera():
         self.video = cv2.VideoCapture(self.video_path)
         self.fps = int(self.video.get(cv2.CAP_PROP_FPS))
         self.total_frames = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.size = (int(self.video.get(3)), int(self.video.get(4)))
 
     
     def get_masked_frame(self, frame):
