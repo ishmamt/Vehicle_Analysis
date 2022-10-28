@@ -10,4 +10,4 @@ import numpy as np
 
 
 logger = u.Logger(os.path.join("Data"), "recording")
-reporter = u.Reporter(os.path.join("Data", "Reports"), "recording", logger)
+reporter = u.Reporter(os.path.join("Data", "Reports"), "recording", os.path.join("Data", "Frames"), logger, ['name', 'timestamp', 'speed(km/h)'])

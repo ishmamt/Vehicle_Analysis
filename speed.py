@@ -67,7 +67,7 @@ class Speed():
         return result >= 0.0
 
 
-    def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps):
+    def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps, current_timestamp, reporter):
         '''
         Process the given frame to calculate speed for all tracked objects.
 
@@ -77,6 +77,8 @@ class Speed():
                 annotate (boolean): True if the frame needs to be annotated.
                 frame_count (int): The number of frame currently being processed.
                 fps (int): The FPS of the video.
+                current_timestamp (string): The current timestamp of the video.
+                reporter (Reporter object): Reporter object for adding to reports.
 
             Returns:
                 processed_frame (numpy array): Processed image frame. It could be annotated if specified.
@@ -84,7 +86,7 @@ class Speed():
         for object_info in tracked_objects_info:
             x_min, y_min, x_max, y_max, id = object_info
             object_bbox = [(x_min, y_min), (x_min + (x_max - x_min), y_min), (x_max, y_max), (x_min, y_min + (y_max - y_min))]
-            object_bbox_center = ((x_min+x_max)//2, (y_min+y_max)//2) 
+            object_bbox_center = ((x_min + x_max) // 2, (y_min + y_max) // 2) 
             speed = None
             # self.logger.debug(f"Object ID: {id} being tracked.")
 
@@ -102,7 +104,7 @@ class Speed():
 
             elif self.entered_the_polygon.get(id, None) is not None and not self.if_inside(object_bbox_center, self.area_asList):
                 # The bbox with the same ID is in the entered_the_polygon dictionary
-                # and it has just crossed exit area. We need to calculate speed and delete this ID.
+                # and it has just crossed exit area. We need to calculate speed.
                 if self.speed_dictionary.get(id, None) is None:
                     # Speed for this ID had not been calculated before.
                     exit_time = frame_count / fps  # in seconds
@@ -110,6 +112,7 @@ class Speed():
 
                     self.speed_dictionary[id] = speed
                     self.logger.debug(f"Object with ID: {id} crossed the exit line: {exit_time}. entry_time: {self.entered_the_polygon} {self.speed_dictionary}")
+                    reporter.add_to_report(frame, id, speed, (x_min, y_min, x_max, y_max), current_timestamp)
 
                 else:
                     speed = self.speed_dictionary[id]

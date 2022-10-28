@@ -1,5 +1,7 @@
 import os
 from datetime import datetime
+import csv
+import cv2
 
 
 class FrameSkipper():
@@ -163,30 +165,74 @@ class Reporter():
     Class for generating reports.
     
         Attributes:
-            results_path (str): Path to generate the report file.
+            report_path (str): Path to generate the report file.
             video_name (str): Name of the video file to be processed.
             image_directory (str): Directory to save images.
             logger (Logger object): Logger object for logging.
+            header (list): List of headings for the report file.
     '''
     
-    def __init__(self, results_path, video_name, image_directory, logger):
+    def __init__(self, report_path, video_name, image_directory, logger, header):
         '''
         Constructor method to intialize a reporter class.
 
         Parameters:
-            results_path (str): Path to generate the log file.
+            report_path (str): Path to generate the report file.
             video_name (str): Name of the video file to be processed.
             image_directory (str): Directory to save images.
             logger (Logger object): Logger object for logging.
+            header (list): List of headings for the report file.
         '''
-        if not os.path.exists(results_path):
-            logger.info(f"Results directory does not exist. Creating results directory: {results_path}")
-            os.makedirs(results_path)
+        if not os.path.exists(report_path):
+            logger.info(f"Results directory does not exist. Creating results directory: {report_path}")
+            os.makedirs(report_path)
             
         if not os.path.exists(image_directory):
-            logger.info(f"Results directory does not exist. Creating image directory: {image_directory}")
-            os.makedirs(image_directory)
+            logger.info(f"Image directory does not exist. Creating image directory: {os.path.join(image_directory, video_name)}")
+            os.makedirs(os.path.join(image_directory, video_name))
 
-        self.results_path = results_path
+        self.report_path = report_path
+        self.image_directory = image_directory
         self.video_name = video_name
         self.logger = logger
+        self.header = header
+        
+        self.create_report()  
+    
+    
+    def create_report(self):
+        '''
+        Creates the initial report file.
+        '''
+        with open(os.path.join(self.report_path, f"{self.video_name}_report.csv"), 'a', encoding='UTF8', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(self.header)
+            
+    def add_to_report(self, frame, id, speed, bbox, current_timestamp):
+        '''
+        Adding a data point to the report file.
+        
+            Parameters:
+                frame (numpy array): Video frame.
+                id (int): ID of the tracekd object.
+                speed (float): Speed of the object.
+                bbox (tuple): Object bounding box.
+                current_timestamp (string): The current timestamp of the video.
+        '''
+        xmin, ymin, xmax, ymax = bbox
+        cropped_frame = frame[ymin: ymax, xmin: xmax]
+        cv2.imwrite(os.path.join(self.image_directory, self.video_name, f"{id}.png"), cropped_frame)
+        
+        self.add_a_row_to_report([str(id), current_timestamp, str(speed)])
+        
+        
+    def add_a_row_to_report(self, row):
+        '''
+        Method to add a row to the report file.
+        
+            Parameters:
+                row (list): The data point to write tot he report file.
+        '''
+        with open(os.path.join(self.report_path, f"{self.video_name}_report.csv"), 'a', encoding='UTF8', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(row)
