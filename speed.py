@@ -1,5 +1,6 @@
 from sympy import Polygon, Line
 import cv2
+import numpy as np
 
 
 class Speed():
@@ -7,12 +8,12 @@ class Speed():
     Class to handle everything related to speed calculation.
     '''
 
-    def __init__(self, entry_area, exit_area, deleting_line, length, logger):
+    def __init__(self, area, deleting_line, length, logger):
         '''
         Constructor method for speed class.
         '''
-        self.entry_area = Polygon(entry_area[0], entry_area[1], entry_area[2], entry_area[3])
-        self.exit_area = Polygon(exit_area[0], exit_area[1], exit_area[2], exit_area[3])
+        self.area = Polygon(area[0], area[1], area[2], area[3])
+        self.area_asList = area
         # self.deleting_line = Line(deleting_line[0], deleting_line[1])
         self.deleting_line = Polygon(deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3])
         self.length = length * 0.001
@@ -38,6 +39,11 @@ class Speed():
         
         return len(bbox_polygon.intersection(area)) > 0
 
+    
+    def if_inside(self, object_bbox_center, area):
+        result = cv2.pointPolygonTest(np.array(area, np.int32),(int(object_bbox_center[0]), int(object_bbox_center[1])), False)
+        return result>=0.0
+
 
     def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps):
         '''
@@ -56,22 +62,23 @@ class Speed():
         for object_info in tracked_objects_info:
             x_min, y_min, x_max, y_max, id = object_info
             object_bbox = [(x_min, y_min), (x_min + (x_max - x_min), y_min), (x_max, y_max), (x_min, y_min + (y_max - y_min))]
+            object_bbox_center = ((x_min+x_max)//2, (y_min+y_max)//2) 
             speed = None
             # self.logger.debug(f"Object ID: {id} being tracked.")
 
-            if self.entered_the_polygon.get(id, None) is None and not self.if_intersect(object_bbox, self.entry_area):
+            if self.entered_the_polygon.get(id, None) is None and not self.if_inside(object_bbox_center, self.area_asList):
                 # The bbox with the same ID is not in the entered_the_polygon dictionary
                 # and it has not crossed entry area. We do not need to calculate speed for this bbox.
                 pass
 
-            elif self.entered_the_polygon.get(id, None) is None and self.if_intersect(object_bbox, self.entry_area):
+            elif self.entered_the_polygon.get(id, None) is None and self.if_inside(object_bbox_center, self.area_asList):
                 # The bbox with the same ID is not in the entered_the_polygon dictionary
                 # and it has just crossed entry area. We need to start processing this bbox.
                 entry_time = frame_count / fps  # in seconds
                 self.entered_the_polygon[id] = entry_time
                 self.logger.debug(f"Object with ID: {id} crossed the entry line. {self.entered_the_polygon} {self.speed_dictionary}")
 
-            elif self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.exit_area):
+            elif self.entered_the_polygon.get(id, None) is not None and not self.if_inside(object_bbox_center, self.area_asList):
                 # The bbox with the same ID is in the entered_the_polygon dictionary
                 # and it has just crossed exit area. We need to calculate speed and delete this ID.
                 if self.speed_dictionary.get(id, None) is None:

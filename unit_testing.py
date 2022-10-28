@@ -9,21 +9,22 @@ import cv2
 import numpy as np
 
 roi = [(85,1030), (1326, 1068), (768, 320), (727, 178), (808, 51), (745, 50), (727, 93), (535, 140), (427, 246)]
-entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
-exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
+# entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
+# exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
+area = [(430, 297), (748, 304), (890, 520), (313, 537)]
 deleting_line = [(256, 770), (1057, 750), (1194, 918), (246, 964)]
 length = 25.0  # in meters
 
 
 
 
-detector = d.VehicleDetector()
+detector = d.VehicleDetector(model_wights_path=os.path.join("yolov5", "models", "vehicle_weights.pt"))
 tracker = t.VehicleTracker()
-camera = c.Camera("Test", os.path.join("Data", "test_10s.avi"), roi)
+camera = c.Camera("Test", os.path.join("Data", "test_79s.avi"), roi)
 frame_skipper = u.FrameSkipper(1)
-logger = u.Logger(os.path.join("Data"), "test_10seconds")
-speed = s.Speed(entry_area, exit_area, deleting_line, length, logger)
-output_video = cv2.VideoWriter(os.path.join("Data", "output_10s.avi"), 
+logger = u.Logger(os.path.join("Data"), "test_79seconds_v2_newW")
+speed = s.Speed(area, deleting_line, length, logger)
+output_video = cv2.VideoWriter(os.path.join("Data", "output_79s_v2_newW.avi"), 
                                 cv2.VideoWriter_fourcc(*'MJPG'),
                                 camera.fps, camera.size)
 
@@ -43,8 +44,7 @@ def process_coordinates(area):
     return area_processed
 
 roi = process_coordinates(roi)
-entry_area = process_coordinates(entry_area)
-exit_area = process_coordinates(exit_area)
+area = process_coordinates(area)
 deleting_line = process_coordinates(deleting_line)
 
 FRAME_COUNT = 0
@@ -72,8 +72,8 @@ while True:
         frame_skipper.reset_skipped_frame_count()
         FRAME_COUNT += 1
 
-        cv2.polylines(masked_frame,[np.array([entry_area[0], entry_area[1], entry_area[2], entry_area[3]], np.int32)], True, (15, 220, 18), 6)
-        cv2.polylines(masked_frame,[np.array([exit_area[0], exit_area[1], exit_area[2], exit_area[3]], np.int32)], True, (15, 220, 18), 6)
+        cv2.polylines(masked_frame,[np.array([area[0], area[1], area[2], area[3]], np.int32)], True, (15, 220, 18), 6)
+        #cv2.polylines(masked_frame,[np.array([exit_area[0], exit_area[1], exit_area[2], exit_area[3]], np.int32)], True, (15, 220, 18), 6)
         # cv2.line(masked_frame, deleting_line[0], deleting_line[1], (15, 220, 18), 6)
         cv2.polylines(masked_frame,[np.array([deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3]], np.int32)], True, (15, 220, 18), 6)
         #cv2.imshow("Video", masked_frame)
