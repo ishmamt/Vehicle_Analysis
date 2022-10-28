@@ -156,3 +156,37 @@ class Logger():
                 message (string): Message to be addded to the log file.
         '''
         self.write_to_log(self.configure_log_message("CRITICAL", message))
+        
+        
+class Reporter():
+    '''
+    Class for generating reports.
+    
+        Attributes:
+            results_path (str): Path to generate the report file.
+            video_name (str): Name of the video file to be processed.
+            image_directory (str): Directory to save images.
+            logger (Logger object): Logger object for logging.
+    '''
+    
+    def __init__(self, results_path, video_name, image_directory, logger):
+        '''
+        Constructor method to intialize a reporter class.
+
+        Parameters:
+            results_path (str): Path to generate the log file.
+            video_name (str): Name of the video file to be processed.
+            image_directory (str): Directory to save images.
+            logger (Logger object): Logger object for logging.
+        '''
+        if not os.path.exists(results_path):
+            logger.info(f"Results directory does not exist. Creating results directory: {results_path}")
+            os.makedirs(results_path)
+            
+        if not os.path.exists(image_directory):
+            logger.info(f"Results directory does not exist. Creating image directory: {image_directory}")
+            os.makedirs(image_directory)
+
+        self.results_path = results_path
+        self.video_name = video_name
+        self.logger = logger

@@ -1,4 +1,4 @@
-from sympy import Polygon, Line
+from sympy import Polygon
 import cv2
 import numpy as np
 
@@ -6,22 +6,34 @@ import numpy as np
 class Speed():
     '''
     Class to handle everything related to speed calculation.
+    
+        Attributes:
+            area (Polygon): Processing area.
+            area_asList (list): Processing area as a list.
+            deleting_line (Polygon): Deleting line.
+            length (float): Length of the processing area.
+            logger (Logger object): Logger object for logging.
     '''
 
     def __init__(self, area, deleting_line, length, logger):
         '''
         Constructor method for speed class.
+        
+            Parameters:
+                area (Polygon): Processing area.
+                area_asList (list): Processing area as a list.
+                deleting_line (Polygon): Deleting line.
+                length (float): Length of the processing area.
+                logger (Logger object): Logger object for logging.`
         '''
         self.area = Polygon(area[0], area[1], area[2], area[3])
         self.area_asList = area
-        # self.deleting_line = Line(deleting_line[0], deleting_line[1])
         self.deleting_line = Polygon(deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3])
         self.length = length * 0.001
         self.logger = logger
         
         self.entered_the_polygon = {}  # {Object ID: entry_time}
         self.speed_dictionary = {}  # {Object ID: speed}
-
 
 
     def if_intersect(self, object_bbox, area):
@@ -41,8 +53,18 @@ class Speed():
 
     
     def if_inside(self, object_bbox_center, area):
+        '''
+        Check to see if object bounding box is inside an area.
+        
+            Parameters:
+                object_bbox (list): List of tuples denoting the bounding box such as: [(xmin, ymin), (xmin + w, ymin), (xmax, ymax), (xmin, ymin + h)]
+                area (list): List of tuples denoting an area such as: [(xmin, ymin), (xmin + w, ymin), (xmax, ymax), (xmin, ymin + h)]
+                
+            Returns:
+                if_inside (boolean): True if object bounding box is inside the given area.
+        '''
         result = cv2.pointPolygonTest(np.array(area, np.int32),(int(object_bbox_center[0]), int(object_bbox_center[1])), False)
-        return result>=0.0
+        return result >= 0.0
 
 
     def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps):
@@ -91,8 +113,6 @@ class Speed():
 
                 else:
                     speed = self.speed_dictionary[id]
-
-                
 
             if self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.deleting_line):
                 # The bbox with the same ID is in the entered_the_polygon dictionary

@@ -57,3 +57,23 @@ class Camera():
         masked_frame = cv2.bitwise_and(frame, mask)
         
         return masked_frame
+    
+    
+    def process_coordinates(self, area, display_dimension=(1920, 1080)):
+        '''
+        Scales the frame area co-ordinates according to the video dimensions and display dimensions.
+        
+            Parameters:
+                area (list): Co-ordinates to be scaled.
+                display_dimension (tuple): Dimension of the display.
+            
+            Returns:
+                area_processed (list): List of scaled co-ordinates.
+        '''
+        x_factor = self.size[0] / display_dimension[0]
+        y_factor = self.size[1] / display_dimension[1]
+        area_processed = []
+        for co in area:
+            area_processed.append((int(co[0] * x_factor), int(co[1] * y_factor)))
+        
+        return area_processed
