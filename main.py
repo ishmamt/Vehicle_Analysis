@@ -33,7 +33,9 @@ frame_skipper = u.FrameSkipper(1)
 logger = u.Logger(os.path.join("Data"), logger_name)
 reporter = u.Reporter(os.path.join("Data", "Reports"), report_file_name, os.path.join("Data", "Frames"), logger, ['name', 'timestamp', 'speed(km/h)'])
 speed = s.Speed(area, deleting_line, length, logger)
-output_video = cv2.VideoWriter(os.path.join("Data", f"output_{video_name}"), 
+
+if save_video:
+    output_video = cv2.VideoWriter(os.path.join("Data", f"output_{video_name}"), 
                                 cv2.VideoWriter_fourcc(*'MJPG'),
                                 camera.fps, camera.size)
 
