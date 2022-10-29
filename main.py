@@ -13,7 +13,8 @@ import datetime
 
 # Parameters to change
 roi = [(85,1030), (1326, 1068), (768, 320), (727, 178), (808, 51), (745, 50), (727, 93), (535, 140), (427, 246)]
-area = [(430, 297), (748, 304), (890, 520), (313, 537)]
+entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
+exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
 deleting_line = [(256, 770), (1057, 750), (1194, 918), (246, 964)]
 length = 25.0  # in meters
 video_name = "recording.avi"
@@ -32,7 +33,7 @@ camera = c.Camera("Test", os.path.join("Data", video_name), roi)
 frame_skipper = u.FrameSkipper(1)
 logger = u.Logger(os.path.join("Data"), logger_name)
 reporter = u.Reporter(os.path.join("Data", "Reports"), report_file_name, os.path.join("Data", "Frames"), logger, ['name', 'timestamp', 'speed(km/h)'])
-speed = s.Speed(area, deleting_line, length, logger)
+speed = s.Speed(entry_area, exit_area, deleting_line, length, logger)
 
 if save_video:
     output_video = cv2.VideoWriter(os.path.join("Data", f"output_{video_name}"), 
@@ -41,7 +42,8 @@ if save_video:
 
 
 roi = camera.process_coordinates(roi)
-area = camera.process_coordinates(area)
+entry_area = camera.process_coordinates(entry_area)
+exit_area = camera.process_coordinates(exit_area)
 deleting_line = camera.process_coordinates(deleting_line)
 
 
@@ -73,7 +75,8 @@ while True:
         FRAME_COUNT += 1
 
         if save_video:
-            cv2.polylines(masked_frame,[np.array([area[0], area[1], area[2], area[3]], np.int32)], True, (15, 220, 18), 6)
+            cv2.polylines(masked_frame,[np.array([entry_area[0], entry_area[1], entry_area[2], entry_area[3]], np.int32)], True, (15, 220, 18), 6)
+            cv2.polylines(masked_frame,[np.array([exit_area[0], exit_area[1], exit_area[2], exit_area[3]], np.int32)], True, (15, 220, 18), 6)
             cv2.polylines(masked_frame,[np.array([deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3]], np.int32)], True, (15, 220, 18), 6)
             
             if show_video:
