@@ -88,7 +88,7 @@ class Speed():
         return np.linalg.norm(np.cross(p2 - p1, p1 - p3)) / np.linalg.norm(p2 - p1)
 
 
-    def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps, current_timestamp, reporter):
+    def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps, reporter):
         '''
         Process the given frame to calculate speed for all tracked objects.
 
@@ -98,7 +98,6 @@ class Speed():
                 annotate (boolean): True if the frame needs to be annotated.
                 frame_count (int): The number of frame currently being processed.
                 fps (int): The FPS of the video.
-                current_timestamp (string): The current timestamp of the video.
                 reporter (Reporter object): Reporter object for adding to reports.
 
             Returns:
@@ -133,8 +132,9 @@ class Speed():
 
                     self.speed_dictionary[id] = speed
                     self.logger.debug(f"Object with ID: {id} crossed the exit line: {exit_time}. entry_time: {self.entered_the_polygon} {self.speed_dictionary}")
+                    
                     if speed > 0.0:
-                        reporter.add_to_report(frame, id, speed, (x_min, y_min, x_max, y_max), current_timestamp)
+                        reporter.add_to_report(frame, id, speed, (x_min, y_min, x_max, y_max), exit_time)
 
                 else:
                     speed = self.speed_dictionary[id]
@@ -189,6 +189,7 @@ class Speed():
             Parameters:
                 entry_time (float): The time of entry in seconds.
                 exit_time (float): The time of exit in seconds.
+                pixel_distance_from_bbox (int): The distance in pixels from the bbox to the starting area.
 
             Returns:
                 speed (float): Speed of an object in Kilometers per hour (Km/h).

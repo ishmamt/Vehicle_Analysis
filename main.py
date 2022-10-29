@@ -63,12 +63,9 @@ while True:
             masked_frame = camera.get_masked_frame(frame)
             results = detector.get_detection_results(masked_frame)
             tracked_objects_info = tracker.track(results, masked_frame, confidence_threshold=0.5)
-            
-            current_timestamp = math.floor(camera.video.get(cv2.CAP_PROP_POS_MSEC)/1000)
-            current_timestamp = str(datetime.timedelta(seconds=int(current_timestamp)))
 
             masked_frame = speed.process_frame(masked_frame, tracked_objects_info, save_video, 
-                                               FRAME_COUNT, camera.fps, current_timestamp, reporter)
+                                               FRAME_COUNT, camera.fps, reporter)
 
         frame_skipper.increment_skipped_frame_count()
         frame_skipper.reset_skipped_frame_count()

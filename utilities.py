@@ -208,7 +208,8 @@ class Reporter():
             writer = csv.writer(file)
             writer.writerow(self.header)
             
-    def add_to_report(self, frame, id, speed, bbox, current_timestamp):
+            
+    def add_to_report(self, frame, id, speed, bbox, time):
         '''
         Adding a data point to the report file.
         
@@ -217,13 +218,17 @@ class Reporter():
                 id (int): ID of the tracekd object.
                 speed (float): Speed of the object.
                 bbox (tuple): Object bounding box.
-                current_timestamp (string): The current timestamp of the video.
+                time (float): The current time of the video.
         '''
         xmin, ymin, xmax, ymax = bbox
         cropped_frame = frame[ymin: ymax, xmin: xmax]
         cv2.imwrite(os.path.join(self.image_directory, self.video_name, f"{id}.png"), cropped_frame)
+
+        if int(time / 60) == 60:
+            time = time % 60
+        time = f"{int(time / 60)}:{int(time % 60)}"
         
-        self.add_a_row_to_report([str(id), current_timestamp, str(speed)])
+        self.add_a_row_to_report([str(id), time, str(speed)])
         
         
     def add_a_row_to_report(self, row):
