@@ -30,7 +30,7 @@ class Camera():
             raise FileNotFoundError("Invalid path to video.")
 
         self.video = cv2.VideoCapture(self.video_path)
-        self.fps = int(self.video.get(cv2.CAP_PROP_FPS))
+        self.fps = self.video.get(cv2.CAP_PROP_FPS)
         self.total_frames = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
         self.size = (int(self.video.get(3)), int(self.video.get(4)))
 

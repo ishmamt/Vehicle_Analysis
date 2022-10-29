@@ -17,9 +17,12 @@ entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
 exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
 deleting_line = [(256, 770), (1057, 750), (1194, 918), (246, 964)]
 length = 25.0  # in meters
-video_name = "2_01_R_092022070000AM.avi"
-logger_name = "2_01_R_092022070000AM"
-report_file_name = "2_01_R_092022070000AM"
+# video_name = "2_01_R_092022070000AM.avi"
+# logger_name = "2_01_R_092022070000AM"
+# report_file_name = "2_01_R_092022070000AM"
+video_name = "recording.avi"
+logger_name = "recording"
+report_file_name = "recording"
 
 
 # Flags to annotate or save the annotated video
