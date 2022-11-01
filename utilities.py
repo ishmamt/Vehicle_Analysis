@@ -226,9 +226,9 @@ class Reporter():
 
         # if int(time / 60) == 60:
         #     time = time % 60
-        time = f"{int(time / 60)}:{int(time % 60)}"
+        time2 = f"{int(time / 60)}:{int(time % 60)}"
         
-        self.add_a_row_to_report([str(id), time, str(speed)])
+        self.add_a_row_to_report([str(id), time2, str(speed)])
         
         
     def add_a_row_to_report(self, row):
