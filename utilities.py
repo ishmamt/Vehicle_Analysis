@@ -224,8 +224,8 @@ class Reporter():
         cropped_frame = frame[ymin: ymax, xmin: xmax]
         cv2.imwrite(os.path.join(self.image_directory, self.video_name, f"{id}.png"), cropped_frame)
 
-        if int(time / 60) == 60:
-            time = time % 60
+        # if int(time / 60) == 60:
+        #     time = time % 60
         time = f"{int(time / 60)}:{int(time % 60)}"
         
         self.add_a_row_to_report([str(id), time, str(speed)])

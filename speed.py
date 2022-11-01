@@ -133,7 +133,7 @@ class Speed():
                     self.speed_dictionary[id] = speed
                     self.logger.debug(f"Object with ID: {id} crossed the exit line: {exit_time}. entry_time: {self.entered_the_polygon} {self.speed_dictionary}")
                     
-                    if speed > 0.0:
+                    if speed > 3:
                         reporter.add_to_report(frame, id, speed, (x_min, y_min, x_max, y_max), exit_time)
 
                 else:
