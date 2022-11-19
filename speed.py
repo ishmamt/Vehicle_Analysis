@@ -129,11 +129,14 @@ class Speed():
                     exit_time = frame_count / fps  # in seconds
                     pixel_distance_from_bbox = self.shortest_distance(self.entered_the_polygon[id][1])
                     speed = self.calculate_speed(self.entered_the_polygon[id][0], exit_time, pixel_distance_from_bbox)
+                    
+                    if speed < 1:
+                        speed = "Inconclusive"
 
                     self.speed_dictionary[id] = speed
                     self.logger.debug(f"Object with ID: {id} crossed the exit line: {exit_time}. entry_time: {self.entered_the_polygon} {self.speed_dictionary}")
                     
-                    if speed > 3:
+                    if speed:
                         reporter.add_to_report(frame, id, speed, (x_min, y_min, x_max, y_max), exit_time)
 
                 else:
