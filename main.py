@@ -7,8 +7,6 @@ from tqdm import tqdm
 import os
 import cv2
 import numpy as np
-import math
-import datetime
 
 
 # Parameters to change
