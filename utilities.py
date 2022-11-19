@@ -172,7 +172,7 @@ class Reporter():
             header (list): List of headings for the report file.
     '''
     
-    def __init__(self, report_path, video_name, image_directory, logger, header):
+    def __init__(self, report_path, video_name, image_directory, logger, header, starting_time):
         '''
         Constructor method to intialize a reporter class.
 
@@ -196,6 +196,7 @@ class Reporter():
         self.video_name = video_name
         self.logger = logger
         self.header = header
+        self.starting_time = starting_time
         
         self.create_report()  
     
@@ -224,11 +225,12 @@ class Reporter():
         cropped_frame = frame[ymin: ymax, xmin: xmax]
         cv2.imwrite(os.path.join(self.image_directory, self.video_name, f"{id}.png"), cropped_frame)
 
-        if int(time / 60) == 60:
-            time = time % 60
-        time = f"{int(time / 60)}:{int(time % 60)}"
+        if (time/60) < 60: 
+            time2 = f"{self.starting_time}:{int(time / 60)}:{int(time % 60)} AM"
+        else:
+            time2 = f"{self.starting_time + 1}:{int(time / 60)-60}:{int(time % 60)} AM"
         
-        self.add_a_row_to_report([str(id), time, str(speed)])
+        self.add_a_row_to_report([str(id), str(time2), str(speed)])
         
         
     def add_a_row_to_report(self, row):

@@ -15,10 +15,14 @@ entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
 exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
 deleting_line = [(256, 770), (1057, 750), (1194, 918), (246, 964)]
 length = 25.0  # in meters
-video_name = "2_01_R_092022070000AM.avi"
-logger_name = "2_01_R_092022070000AM"
-report_file_name = "2_01_R_092022070000AM"
+# video_name = "2_01_R_092022070000AM.avi"
+# logger_name = "2_01_R_092022070000AM"
+# report_file_name = "2_01_R_092022070000AM"
 
+video_name = "2_01_R_092022070000AM.avi"
+logger_name = video_name.split(".")[0]
+report_file_name = logger_name
+starting_time = 7
 
 # Flags to annotate or save the annotated video
 show_video = False
@@ -30,7 +34,7 @@ tracker = t.VehicleTracker()
 camera = c.Camera("Test", os.path.join("Data", video_name), roi)
 frame_skipper = u.FrameSkipper(1)
 logger = u.Logger(os.path.join("Data"), logger_name)
-reporter = u.Reporter(os.path.join("Data", "Reports"), report_file_name, os.path.join("Data", "Frames"), logger, ['ID', 'timestamp', 'speed(km/h)'])
+reporter = u.Reporter(os.path.join("Data", "Reports"), report_file_name, os.path.join("Data", "Frames"), logger, ['ID', 'timestamp', 'speed(km/h)'], int(starting_time))
 speed = s.Speed(entry_area, exit_area, deleting_line, length, logger)
 
 if save_video:
