@@ -1,26 +1,41 @@
-from sympy import Polygon, Line
+from sympy import Polygon
 import cv2
+import numpy as np
 
 
 class Speed():
     '''
     Class to handle everything related to speed calculation.
+    
+        Attributes:
+            area (Polygon): Processing area.
+            area_asList (list): Processing area as a list.
+            deleting_line (Polygon): Deleting line.
+            length (float): Length of the processing area.
+            logger (Logger object): Logger object for logging.
     '''
 
     def __init__(self, entry_area, exit_area, deleting_line, length, logger):
         '''
         Constructor method for speed class.
+        
+            Parameters:
+                area (Polygon): Processing area.
+                area_asList (list): Processing area as a list.
+                deleting_line (Polygon): Deleting line.
+                length (float): Length of the processing area.
+                logger (Logger object): Logger object for logging.`
         '''
         self.entry_area = Polygon(entry_area[0], entry_area[1], entry_area[2], entry_area[3])
         self.exit_area = Polygon(exit_area[0], exit_area[1], exit_area[2], exit_area[3])
-        # self.deleting_line = Line(deleting_line[0], deleting_line[1])
         self.deleting_line = Polygon(deleting_line[0], deleting_line[1], deleting_line[2], deleting_line[3])
         self.length = length * 0.001
         self.logger = logger
+        self.pixel_distance = int(self.shortest_distance(list(reversed(exit_area))))
+        self.pixel_ratio = self.length / self.pixel_distance
         
         self.entered_the_polygon = {}  # {Object ID: entry_time}
         self.speed_dictionary = {}  # {Object ID: speed}
-
 
 
     def if_intersect(self, object_bbox, area):
@@ -38,8 +53,42 @@ class Speed():
         
         return len(bbox_polygon.intersection(area)) > 0
 
+    
+    def if_inside(self, object_bbox_center, area):
+        '''
+        Check to see if object bounding box is inside an area.
+        
+            Parameters:
+                object_bbox (list): List of tuples denoting the bounding box such as: [(xmin, ymin), (xmin + w, ymin), (xmax, ymax), (xmin, ymin + h)]
+                area (list): List of tuples denoting an area such as: [(xmin, ymin), (xmin + w, ymin), (xmax, ymax), (xmin, ymin + h)]
+                
+            Returns:
+                if_inside (boolean): True if object bounding box is inside the given area.
+        '''
+        result = cv2.pointPolygonTest(np.array(area, np.int32),(int(object_bbox_center[0]), int(object_bbox_center[1])), False)
+        return result >= 0.0
+    
+    
+    def shortest_distance(self, object_bbox):
+        '''
+        Returns the shortest distance between a point an a line.
+        
+            Parameters:
+                object_bbox (list): List of tuples denoting the bounding box such as: [(xmin, ymin), (xmin + w, ymin), (xmax, ymax), (xmin, ymin + h)].
+                
+            Returns:
+                distance (float): The distance value.
+        '''
+        p1 = np.asarray(tuple(self.entry_area.vertices[0]), dtype=np.float32)
+        p2 = np.asarray(tuple(self.entry_area.vertices[1]), dtype=np.float32)
+        x1_y1, x2_y2 = object_bbox[-2: ]
+        p3 = ((x1_y1[0] + x2_y2[0]) / 2, (x1_y1[1] + x2_y2[1]) / 2)
+        p3 = np.asarray(p3, dtype=np.float32)
+        
+        return np.linalg.norm(np.cross(p2 - p1, p1 - p3)) / np.linalg.norm(p2 - p1)
 
-    def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps):
+
+    def process_frame(self, frame, tracked_objects_info, annotate, frame_count, fps, reporter):
         '''
         Process the given frame to calculate speed for all tracked objects.
 
@@ -49,6 +98,7 @@ class Speed():
                 annotate (boolean): True if the frame needs to be annotated.
                 frame_count (int): The number of frame currently being processed.
                 fps (int): The FPS of the video.
+                reporter (Reporter object): Reporter object for adding to reports.
 
             Returns:
                 processed_frame (numpy array): Processed image frame. It could be annotated if specified.
@@ -68,24 +118,29 @@ class Speed():
                 # The bbox with the same ID is not in the entered_the_polygon dictionary
                 # and it has just crossed entry area. We need to start processing this bbox.
                 entry_time = frame_count / fps  # in seconds
-                self.entered_the_polygon[id] = entry_time
+                self.entered_the_polygon[id] = [entry_time, object_bbox]
                 self.logger.debug(f"Object with ID: {id} crossed the entry line. {self.entered_the_polygon} {self.speed_dictionary}")
 
             elif self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.exit_area):
                 # The bbox with the same ID is in the entered_the_polygon dictionary
-                # and it has just crossed exit area. We need to calculate speed and delete this ID.
+                # and it has just crossed exit area. We need to calculate speed.
                 if self.speed_dictionary.get(id, None) is None:
                     # Speed for this ID had not been calculated before.
                     exit_time = frame_count / fps  # in seconds
-                    speed = self.calculate_speed(self.entered_the_polygon[id], exit_time)
+                    pixel_distance_from_bbox = self.shortest_distance(self.entered_the_polygon[id][1])
+                    speed = self.calculate_speed(self.entered_the_polygon[id][0], exit_time, pixel_distance_from_bbox)
+                    
+                    if speed < 1:
+                        speed = "Inconclusive"
 
                     self.speed_dictionary[id] = speed
                     self.logger.debug(f"Object with ID: {id} crossed the exit line: {exit_time}. entry_time: {self.entered_the_polygon} {self.speed_dictionary}")
+                    
+                    if speed:
+                        reporter.add_to_report(frame, id, speed, (x_min, y_min, x_max, y_max), exit_time)
 
                 else:
                     speed = self.speed_dictionary[id]
-
-                
 
             if self.entered_the_polygon.get(id, None) is not None and self.if_intersect(object_bbox, self.deleting_line):
                 # The bbox with the same ID is in the entered_the_polygon dictionary
@@ -130,16 +185,17 @@ class Speed():
         return frame
 
     
-    def calculate_speed(self, entry_time, exit_time):
+    def calculate_speed(self, entry_time, exit_time, pixel_distance_from_bbox):
         '''
         Calculates the speed of the object.
 
             Parameters:
                 entry_time (float): The time of entry in seconds.
                 exit_time (float): The time of exit in seconds.
+                pixel_distance_from_bbox (int): The distance in pixels from the bbox to the starting area.
 
             Returns:
                 speed (float): Speed of an object in Kilometers per hour (Km/h).
         '''
         
-        return round((self.length / (exit_time - entry_time)) * 3600, 3)
+        return round(((self.length - (pixel_distance_from_bbox * self.pixel_ratio)) / (exit_time - entry_time)) * 3600, 3)
