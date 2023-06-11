@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 
 
+
 # Parameters to change
 # roi = [(168, 20), (450, 20), (955, 306), (955, 1072), (230, 1072)]
 # entry_area = [(213, 160), (348, 157), (405, 225), (225, 225)]
