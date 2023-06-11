@@ -10,23 +10,26 @@ import numpy as np
 
 
 # Parameters to change
-roi = [(85,1030), (1326, 1068), (768, 320), (727, 178), (808, 51), (745, 50), (727, 93), (535, 140), (427, 246)]
-entry_area = [(423, 288), (753, 297), (768, 334), (414, 321)]
-exit_area = [(320, 535), (880, 530), (890, 560), (315, 562)]
-deleting_line = [(256, 770), (1057, 750), (1194, 918), (246, 964)]
-length = 25.0  # in meters
-# video_name = "2_01_R_092022070000AM.avi"
-# logger_name = "2_01_R_092022070000AM"
-# report_file_name = "2_01_R_092022070000AM"
+# roi = [(168, 20), (450, 20), (955, 306), (955, 1072), (230, 1072)]
+# entry_area = [(213, 160), (348, 157), (405, 225), (225, 225)]
+# exit_area = [(330, 714), (680, 675), (782, 815), (360, 875)]
+# deleting_line = [(378, 930), (831, 888), (950, 1066), (423, 1066)]
+# length = 32.0  # in meters
 
-video_name = "2_01_R_092022070000AM.avi"
+roi = [(145, 16), (273, 16), (955, 105), (955, 1072), (230, 1072)]
+entry_area = [(164, 97), (300, 78), (364, 136), (180, 172)]
+exit_area = [(255, 534), (727, 343), (870, 484), (306, 747)]
+deleting_line = [(310, 832), (861, 633), (955, 826), (366, 1050)]
+length = 39.0  # in meters
+
+video_name = "recording.avi"
 logger_name = video_name.split(".")[0]
 report_file_name = logger_name
-starting_time = 7
+starting_time = 6
 
 # Flags to annotate or save the annotated video
 show_video = False
-save_video = False
+save_video = True
 
 
 detector = d.VehicleDetector(model_wights_path=os.path.join("yolov5", "models", "yolov5s.pt"))
@@ -43,10 +46,10 @@ if save_video:
                                 camera.fps, camera.size)
 
 
-roi = camera.process_coordinates(roi)
-entry_area = camera.process_coordinates(entry_area)
-exit_area = camera.process_coordinates(exit_area)
-deleting_line = camera.process_coordinates(deleting_line)
+roi = camera.process_coordinates(roi, display_dimension=(962, 1080))
+entry_area = camera.process_coordinates(entry_area, display_dimension=(962, 1080))
+exit_area = camera.process_coordinates(exit_area, display_dimension=(962, 1080))
+deleting_line = camera.process_coordinates(deleting_line, display_dimension=(962, 1080))
 
 
 FRAME_COUNT = 0
